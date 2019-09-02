@@ -9,17 +9,51 @@ use std::mem;
 
 use byteorder::{ByteOrder, LE};
 use num_traits::FromPrimitive;
+#[cfg(feature = "serde_support")]
+use serde::{Serialize, Deserialize};
+//#[cfg(feature = "serde_support")]
+//use serde::ser::Serialize;
 
 // ====================================================
 // ================= TYPE DEFINITIONS =================
 // ====================================================
 
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub struct Quote<'a> {
     header: QuoteHeader<'a>,
     report_body: Cow<'a, [u8]>,
     signature: Cow<'a, [u8]>,
 }
 
+//impl<'a> Serialize for Quote<'a> {
+//    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//    where
+//        S: Serializer,
+//    {
+//        // 3 is the number of fields in the struct.
+//        let mut state = serializer.serialize_struct("Quote", 3)?;
+//        state.serialize_field("header", &self.header)?;
+//        state.serialize_field("report_body", &self.report_body)?;
+//        state.serialize_field("signature", &self.signature)?;
+//        state.end()
+//    }
+//}
+
+//impl Deserialize for Quote {
+//    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//    where
+//        S: Serializer,
+//    {
+//        // 3 is the number of fields in the struct.
+//        let mut state = serializer.serialize_struct("Color", 3)?;
+//        state.serialize_field("r", &self.r)?;
+//        state.serialize_field("g", &self.g)?;
+//        state.serialize_field("b", &self.b)?;
+//        state.end()
+//    }
+//}
+
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub enum QuoteHeader<'a> {
     V3 {
         attestation_key_type: Quote3AttestationKeyType,
@@ -32,6 +66,7 @@ pub enum QuoteHeader<'a> {
 
 #[repr(u16)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub enum Quote3AttestationKeyType {
     EcdsaP256 = 2,
     EcdsaP384 = 3,

@@ -22,6 +22,8 @@ extern crate num_derive;
 extern crate num_traits;
 extern crate sgx_isa;
 extern crate sgxs_loaders;
+#[cfg(feature = "serde_support")]
+extern crate serde;
 
 use failure::Error;
 use num_traits::FromPrimitive;
