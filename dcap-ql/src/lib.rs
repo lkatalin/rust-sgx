@@ -22,10 +22,13 @@ extern crate libc;
 #[macro_use]
 extern crate num_derive;
 extern crate num_traits;
-#[cfg(feature = "serde_support")]
-extern crate serde;
+extern crate openssl;
+extern crate percent_encoding;
 extern crate sgx_isa;
 extern crate sgxs_loaders;
+
+#[cfg(feature = "serde_support")]
+extern crate serde;
 
 use failure::Error;
 use num_traits::FromPrimitive;
