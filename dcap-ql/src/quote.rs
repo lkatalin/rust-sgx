@@ -9,17 +9,21 @@ use std::mem;
 
 use byteorder::{ByteOrder, LE};
 use num_traits::FromPrimitive;
+#[cfg(feature = "serde_support")]
+use serde::{Deserialize, Serialize};
 
 // ====================================================
 // ================= TYPE DEFINITIONS =================
 // ====================================================
 
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub struct Quote<'a> {
     header: QuoteHeader<'a>,
     report_body: Cow<'a, [u8]>,
     signature: Cow<'a, [u8]>,
 }
 
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub enum QuoteHeader<'a> {
     V3 {
         attestation_key_type: Quote3AttestationKeyType,
@@ -32,6 +36,7 @@ pub enum QuoteHeader<'a> {
 
 #[repr(u16)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub enum Quote3AttestationKeyType {
     EcdsaP256 = 2,
     EcdsaP384 = 3,

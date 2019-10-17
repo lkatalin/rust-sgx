@@ -27,6 +27,7 @@ required-features = ["test-sgx-flc"]
 link = ["dcap-ql-sys/link"]
 # Enable tests that can only be run on an SGX-enabled environment with FLC
 test-sgx-flc = []
+serde-support = ["serde"]
 
 [dependencies]
 # Project dependencies
@@ -41,6 +42,7 @@ lazy_static = "1"   # MIT/Apache-2.0
 libc = "0.2"        # MIT/Apache-2.0
 num-derive = "0.2"  # MIT/Apache-2.0
 num-traits = "0.2"  # MIT/Apache-2.0
+serde = { version = "1.0.84", features = ["derive"], optional = true } # MIT/Apache-2.0
 
 [dev-dependencies]
 "report-test" = { version = "0.2.0", path = "../report-test" }

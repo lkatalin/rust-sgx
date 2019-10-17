@@ -23,10 +23,54 @@ extern crate std;
 #[macro_use]
 extern crate bitflags;
 
+#[macro_use]
+#[cfg(feature = "serde_support")]
+extern crate serde;
+
+#[macro_use]
+#[cfg(feature = "serde_support")]
+extern crate serde_big_array;
+
 #[cfg(all(feature = "sgxstd", target_env = "sgx"))]
 use std::os::fortanix_sgx::arch;
 
 use core::{convert::TryFrom, num::TryFromIntError, slice};
+
+// big_array! is used to support serilization for large arrays in structs.
+#[cfg(feature = "serde_support")]
+big_array! { BigArray; }
+
+// These helper functions implement defaults for structs' reserved fields,
+// which is necessary for serde support.
+#[cfg(feature = "serde_support")]
+fn report_reserved1() -> [u8; 28] {
+    [0u8; 28]
+}
+
+#[cfg(feature = "serde_support")]
+fn report_reserved2() -> [u8; 32] {
+    [0u8; 32]
+}
+
+#[cfg(feature = "serde_support")]
+fn report_reserved3() -> [u8; 96] {
+    [0u8; 96]
+}
+
+#[cfg(feature = "serde_support")]
+fn report_reserved4() -> [u8; 60] {
+    [0u8; 60]
+}
+
+#[cfg(feature = "serde_support")]
+fn ti_reserved1() -> [u8; 4] {
+    [0u8; 4]
+}
+
+#[cfg(feature = "serde_support")]
+fn ti_reserved2() -> [u8; 456] {
+    [0u8; 456]
+}
 
 #[cfg(not(feature = "large_array_derive"))]
 #[macro_use]
@@ -66,6 +110,7 @@ macro_rules! struct_def {
     (
         #[repr(C $(, align($align:tt))*)]
         $(#[cfg_attr(feature = "large_array_derive", derive($($cfgderive:meta),*))])*
+	$(#[cfg_attr(feature = "serde_support", derive($($serdederive:meta),*))])*
         $(#[derive($($derive:meta),*)])*
         pub struct $name:ident $impl:tt
     ) => {
@@ -74,6 +119,7 @@ macro_rules! struct_def {
             #[cfg_attr(feature = "large_array_derive", derive($($cfgderive),*))]
         )*
         #[repr(C $(, align($align))*)]
+	$(#[cfg_attr(feature = "serde_support", derive($($serdederive),*))])*
         $(#[derive($($derive),*)])*
         pub struct $name $impl
 
@@ -98,6 +144,7 @@ macro_rules! struct_def {
             // Not otherwise used.
             fn _type_tests() {
                 #[repr(C)]
+		$(#[cfg_attr(feature = "serde_support", derive($($serdederive),*))])*
                 struct _Unaligned $impl
 
                 impl _Unaligned {
@@ -290,6 +337,7 @@ impl Secs {
 
 struct_def! {
 #[repr(C)]
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Attributes {
     pub flags: AttributesFlags,
@@ -303,6 +351,7 @@ impl Attributes {
 
 bitflags! {
     #[repr(C)]
+    #[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
     pub struct AttributesFlags: u64 {
         const INIT          = 0b0000_0001;
         const DEBUG         = 0b0000_0010;
@@ -320,6 +369,7 @@ impl Default for AttributesFlags {
 
 bitflags! {
     #[repr(C)]
+    #[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
     pub struct Miscselect: u32 {
         const EXINFO = 0b0000_0001;
     }
@@ -552,18 +602,24 @@ struct_def! {
     feature = "large_array_derive",
     derive(Clone, Debug, Default, Eq, PartialEq)
 )]
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub struct Report {
     pub cpusvn: [u8; 16],
     pub miscselect: Miscselect,
+    #[cfg_attr(feature = "serde_support", serde(default = "report_reserved1"), serde(skip))]
     pub _reserved1: [u8; 28],
     pub attributes: Attributes,
     pub mrenclave: [u8; 32],
+    #[cfg_attr(feature = "serde_support", serde(default = "report_reserved2"), serde(skip))]
     pub _reserved2: [u8; 32],
     pub mrsigner: [u8; 32],
+    #[cfg_attr(feature = "serde_support", serde(default = "report_reserved3"), serde(skip))]
     pub _reserved3: [u8; 96],
     pub isvprodid: u16,
     pub isvsvn: u16,
+    #[cfg_attr(feature = "serde_support", serde(default = "report_reserved4"), serde(skip))]
     pub _reserved4: [u8; 60],
+    #[cfg_attr(feature = "serde_support", serde(with = "BigArray"))]
     pub reportdata: [u8; 64],
     pub keyid: [u8; 32],
     pub mac: [u8; 16],
@@ -638,11 +694,14 @@ struct_def! {
     feature = "large_array_derive",
     derive(Clone, Debug, Default, Eq, PartialEq)
 )]
+#[cfg_attr(feature = "serde_support", derive(Serialize, Deserialize))]
 pub struct Targetinfo {
     pub measurement: [u8; 32],
     pub attributes: Attributes,
+    #[cfg_attr(feature = "serde_support", serde(default = "ti_reserved1"), serde(skip))]
     pub _reserved1: [u8; 4],
     pub miscselect: Miscselect,
+    #[cfg_attr(feature = "serde_support", serde(default = "ti_reserved2"), serde(skip))]
     pub _reserved2: [u8; 456],
 }
 }

@@ -23,7 +23,10 @@ categories = ["hardware-support"]
 [dependencies]
 # External dependencies
 bitflags = "1" # MIT/Apache-2.0
+serde = { version = "1.0.84", features = ["derive"], optional = true } #MIT/Apache-2.0
+serde-big-array = { version = "0.1.5", optional = true } # MIT/Apache-2.0
 
 [features]
 large_array_derive = []
 sgxstd = []
+serde-support = ["serde", "serde-big-array"]
